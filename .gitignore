@@ -1,0 +1,23 @@
+# env
+.env
+.env.local
+.env.*.local
+
+# go
+/api/bin/
+/api/tmp/
+*.test
+*.out
+coverage.out
+
+# node
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/
+*.swp
