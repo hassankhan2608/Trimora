@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"trimora/internal/links"
+	"trimora/internal/validate"
 )
 
 type Handler struct {
@@ -22,27 +23,12 @@ func NewHandler(service *links.Service, baseURL string, log *slog.Logger) *Handl
 	return &Handler{service: service, baseURL: strings.TrimRight(baseURL, "/"), log: log}
 }
 
-type createRequest struct {
-	URL   string `json:"url"`
-	Alias string `json:"alias,omitempty"`
-}
-
-type createResponse struct {
-	Code     string `json:"code"`
-	ShortURL string `json:"short_url"`
-	URL      string `json:"url"`
-}
-
-type errorResponse struct {
-	Error string `json:"error"`
-}
-
 func (h *Handler) Health(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var req createRequest
+	var req CreateRequest
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid json body")
 		return
@@ -54,7 +40,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, createResponse{
+	writeJSON(w, http.StatusCreated, CreateResponse{
 		Code:     link.Code,
 		ShortURL: h.baseURL + "/" + link.Code,
 		URL:      link.TargetURL,
@@ -80,23 +66,23 @@ func (h *Handler) respondCreateError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, links.ErrAliasUnavailable):
 		writeError(w, http.StatusConflict, err.Error())
+	case isValidationError(err):
+		writeError(w, http.StatusBadRequest, err.Error())
 	default:
-		if isClientError(err) {
-			writeError(w, http.StatusBadRequest, err.Error())
-			return
-		}
 		h.log.Error("create link", "err", err)
 		writeError(w, http.StatusInternalServerError, "internal error")
 	}
 }
 
-func isClientError(err error) bool {
-	switch err.Error() {
-	case "url is required", "url is too long", "url is invalid",
-		"url must use http or https",
-		"alias must be between 3 and 32 characters",
-		"alias may only contain letters, numbers, hyphens, and underscores",
-		"alias is reserved":
+func isValidationError(err error) bool {
+	switch {
+	case errors.Is(err, validate.ErrURLEmpty),
+		errors.Is(err, validate.ErrURLTooLong),
+		errors.Is(err, validate.ErrURLInvalid),
+		errors.Is(err, validate.ErrURLScheme),
+		errors.Is(err, validate.ErrAliasLength),
+		errors.Is(err, validate.ErrAliasFormat),
+		errors.Is(err, validate.ErrAliasReserved):
 		return true
 	}
 	return false
@@ -109,5 +95,5 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 
 func writeError(w http.ResponseWriter, status int, msg string) {
-	writeJSON(w, status, errorResponse{Error: msg})
+	writeJSON(w, status, ErrorResponse{Error: msg})
 }
