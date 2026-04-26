@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS links (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS links_target_url_idx ON links (target_url);
+ALTER TABLE links ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS links_expires_at_idx ON links (expires_at);
 `
 
 // Open returns a ready-to-use *sql.DB and ensures the schema exists.

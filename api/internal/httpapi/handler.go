@@ -20,7 +20,11 @@ type Handler struct {
 }
 
 func NewHandler(service *links.Service, baseURL string, log *slog.Logger) *Handler {
-	return &Handler{service: service, baseURL: strings.TrimRight(baseURL, "/"), log: log}
+	return &Handler{
+		service: service,
+		baseURL: strings.TrimRight(baseURL, "/"),
+		log:     log,
+	}
 }
 
 func (h *Handler) Health(w http.ResponseWriter, _ *http.Request) {
@@ -34,27 +38,37 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := h.service.Create(r.Context(), req.URL, req.Alias)
+	expiresIn, err := validate.ExpiresIn(req.ExpiresIn)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	link, err := h.service.Create(r.Context(), req.URL, req.Alias, expiresIn)
 	if err != nil {
 		h.respondCreateError(w, err)
 		return
 	}
 
 	writeJSON(w, http.StatusCreated, CreateResponse{
-		Code:     link.Code,
-		ShortURL: h.baseURL + "/" + link.Code,
-		URL:      link.TargetURL,
+		Code:      link.Code,
+		ShortURL:  h.baseURL + "/" + link.Code,
+		URL:       link.TargetURL,
+		ExpiresAt: link.ExpiresAt,
 	})
 }
 
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	code := chi.URLParam(r, "code")
 	target, err := h.service.Resolve(r.Context(), code)
-	if errors.Is(err, links.ErrNotFound) {
+	switch {
+	case errors.Is(err, links.ErrNotFound):
 		http.NotFound(w, r)
 		return
-	}
-	if err != nil {
+	case errors.Is(err, links.ErrExpired):
+		writeError(w, http.StatusGone, "link expired")
+		return
+	case err != nil:
 		h.log.Error("resolve link", "code", code, "err", err)
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
@@ -82,7 +96,8 @@ func isValidationError(err error) bool {
 		errors.Is(err, validate.ErrURLScheme),
 		errors.Is(err, validate.ErrAliasLength),
 		errors.Is(err, validate.ErrAliasFormat),
-		errors.Is(err, validate.ErrAliasReserved):
+		errors.Is(err, validate.ErrAliasReserved),
+		errors.Is(err, validate.ErrExpiryInvalid):
 		return true
 	}
 	return false

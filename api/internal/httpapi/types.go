@@ -1,16 +1,20 @@
 package httpapi
 
+import "time"
+
 // CreateRequest is the JSON body for POST /api/shorten.
 type CreateRequest struct {
-	URL   string `json:"url"`
-	Alias string `json:"alias,omitempty"`
+	URL       string `json:"url"`
+	Alias     string `json:"alias,omitempty"`
+	ExpiresIn string `json:"expires_in,omitempty"`
 }
 
 // CreateResponse is the JSON body returned for a created or reused short link.
 type CreateResponse struct {
-	Code     string `json:"code"`
-	ShortURL string `json:"short_url"`
-	URL      string `json:"url"`
+	Code      string     `json:"code"`
+	ShortURL  string     `json:"short_url"`
+	URL       string     `json:"url"`
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 }
 
 // ErrorResponse is the JSON body returned for any non-2xx API response.

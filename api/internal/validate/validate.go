@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
@@ -21,6 +22,7 @@ var (
 	ErrAliasLength   = errors.New("alias must be between 3 and 32 characters")
 	ErrAliasFormat   = errors.New("alias may only contain letters, numbers, hyphens, and underscores")
 	ErrAliasReserved = errors.New("alias is reserved")
+	ErrExpiryInvalid = errors.New("expiry must be one of 1h, 1d, 7d, 30d")
 )
 
 var (
@@ -28,6 +30,12 @@ var (
 	reserved = map[string]struct{}{
 		"api": {}, "healthz": {}, "health": {}, "static": {},
 		"admin": {}, "assets": {}, "favicon.ico": {}, "robots.txt": {},
+	}
+	expiryOptions = map[string]time.Duration{
+		"1h":  time.Hour,
+		"1d":  24 * time.Hour,
+		"7d":  7 * 24 * time.Hour,
+		"30d": 30 * 24 * time.Hour,
 	}
 )
 
@@ -66,4 +74,17 @@ func Alias(raw string) (string, error) {
 		return "", ErrAliasReserved
 	}
 	return alias, nil
+}
+
+// ExpiresIn parses an expiry option. Empty string means no expiry.
+func ExpiresIn(raw string) (time.Duration, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return 0, nil
+	}
+	d, ok := expiryOptions[strings.ToLower(raw)]
+	if !ok {
+		return 0, ErrExpiryInvalid
+	}
+	return d, nil
 }
