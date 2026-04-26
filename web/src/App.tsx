@@ -1,9 +1,10 @@
 import { useState } from "react";
-import ShortenForm from "./components/ShortenForm.jsx";
-import Result from "./components/Result.jsx";
+import ShortenForm from "./components/ShortenForm";
+import Result from "./components/Result";
+import type { ShortLink } from "./types/api";
 
 export default function App() {
-  const [link, setLink] = useState(null);
+  const [link, setLink] = useState<ShortLink | null>(null);
 
   return (
     <div className="page">

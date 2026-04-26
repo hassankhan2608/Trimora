@@ -1,26 +1,33 @@
-import { useState } from "react";
-import { shorten } from "../api.js";
+import { useState, type FormEvent } from "react";
+import { shorten } from "../api";
+import type { ShortLink } from "../types/api";
 
-export default function ShortenForm({ onCreated }) {
+interface Props {
+  onCreated: (link: ShortLink | null) => void;
+}
+
+export default function ShortenForm({ onCreated }: Props) {
   const [url, setUrl] = useState("");
   const [alias, setAlias] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleSubmit(event) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (loading) return;
     setError("");
     setLoading(true);
-    try {
-      const link = await shorten({ url: url.trim(), alias: alias.trim() });
-      onCreated(link);
-    } catch (err) {
-      onCreated(null);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    void (async () => {
+      try {
+        const link = await shorten({ url: url.trim(), alias: alias.trim() });
+        onCreated(link);
+      } catch (err) {
+        onCreated(null);
+        setError(err instanceof Error ? err.message : "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }
 
   return (

@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
+import type { ShortLink } from "../types/api";
 
-export default function Result({ link }) {
+interface Props {
+  link: ShortLink;
+}
+
+export default function Result({ link }: Props) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setCopied(false);
   }, [link]);
 
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(link.short_url);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
+  function handleCopy() {
+    void navigator.clipboard
+      .writeText(link.short_url)
+      .then(() => setCopied(true))
+      .catch(() => setCopied(false));
   }
 
   return (
