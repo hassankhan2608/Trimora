@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS links (
     target_url  TEXT NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS links_target_url_idx ON links (target_url);
 `
 
 // Open returns a ready-to-use *sql.DB and ensures the schema exists.

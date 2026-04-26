@@ -61,3 +61,25 @@ func (r *Repository) FindByCode(ctx context.Context, code string) (Link, error) 
 	}
 	return link, nil
 }
+
+// FindByTargetURL returns the oldest link for a target URL, if any.
+// Used to deduplicate when a user shortens the same URL without a custom alias.
+func (r *Repository) FindByTargetURL(ctx context.Context, targetURL string) (Link, error) {
+	const q = `
+		SELECT code, target_url, created_at
+		FROM links
+		WHERE target_url = $1
+		ORDER BY created_at ASC
+		LIMIT 1
+	`
+	var link Link
+	err := r.db.QueryRowContext(ctx, q, targetURL).
+		Scan(&link.Code, &link.TargetURL, &link.CreatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Link{}, ErrNotFound
+	}
+	if err != nil {
+		return Link{}, err
+	}
+	return link, nil
+}

@@ -47,6 +47,12 @@ func (s *Service) Create(ctx context.Context, rawURL, alias string) (Link, error
 		return link, nil
 	}
 
+	if existing, err := s.repo.FindByTargetURL(ctx, target); err == nil {
+		return existing, nil
+	} else if !errors.Is(err, ErrNotFound) {
+		return Link{}, err
+	}
+
 	for i := 0; i < createMaxRetries; i++ {
 		code, err := shortcode.Generate(codeLength)
 		if err != nil {
