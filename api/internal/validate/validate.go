@@ -28,8 +28,9 @@ var (
 var (
 	aliasRe  = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 	reserved = map[string]struct{}{
-		"api": {}, "healthz": {}, "health": {}, "static": {},
-		"admin": {}, "assets": {}, "favicon.ico": {}, "robots.txt": {},
+		"api": {}, "healthz": {}, "livez": {}, "readyz": {},
+		"health": {}, "static": {}, "admin": {}, "assets": {},
+		"favicon.ico": {}, "robots.txt": {},
 	}
 	expiryOptions = map[string]time.Duration{
 		"1h":  time.Hour,

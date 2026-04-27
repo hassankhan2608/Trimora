@@ -18,13 +18,24 @@ func Router(h *Handler, allowedOrigins []string) http.Handler {
 	r.Use(middleware.Timeout(15 * time.Second))
 	r.Use(cors(allowedOrigins))
 
-	r.Get("/healthz", h.Health)
+	r.Get("/healthz", h.Live)
+	r.Get("/livez", h.Live)
+	r.Get("/readyz", h.Ready)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Post("/shorten", h.Create)
 	})
 
 	r.Get("/{code:[A-Za-z0-9_-]+}", h.Redirect)
+
+	r.NotFound(func(w http.ResponseWriter, req *http.Request) {
+		if wantsHTML(req) {
+			renderStatusPage(w, http.StatusNotFound, "Page not found",
+				"That page doesn’t exist on Trimora.")
+			return
+		}
+		writeError(w, http.StatusNotFound, "not found")
+	})
 
 	return r
 }

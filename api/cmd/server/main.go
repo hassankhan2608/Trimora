@@ -44,7 +44,7 @@ func run(log *slog.Logger) error {
 
 	repo := links.NewRepository(db)
 	service := links.NewService(repo)
-	handler := httpapi.NewHandler(service, cfg.BaseURL, log)
+	handler := httpapi.NewHandler(service, db, cfg.BaseURL, log)
 
 	allowed := splitAndTrim(os.Getenv("ALLOWED_ORIGINS"))
 	router := httpapi.Router(handler, allowed)
