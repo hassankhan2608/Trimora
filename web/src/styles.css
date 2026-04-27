@@ -297,6 +297,31 @@ a {
   word-break: break-all;
 }
 
+.result__expiry {
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: #faf3e8;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  align-self: flex-start;
+}
+
+.field__select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%),
+    linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
 .page__footer {
   text-align: center;
   color: var(--ink-soft);

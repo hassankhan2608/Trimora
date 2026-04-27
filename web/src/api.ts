@@ -5,6 +5,7 @@ const baseURL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 export async function shorten(input: ShortenRequest): Promise<ShortLink> {
   const body: ShortenRequest = { url: input.url };
   if (input.alias) body.alias = input.alias;
+  if (input.expires_in) body.expires_in = input.expires_in;
 
   const res = await fetch(`${baseURL}/api/shorten`, {
     method: "POST",

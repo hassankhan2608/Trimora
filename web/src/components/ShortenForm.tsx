@@ -1,14 +1,23 @@
 import { useState, type FormEvent } from "react";
 import { shorten } from "../api";
-import type { ShortLink } from "../types/api";
+import type { ExpiresIn, ShortLink } from "../types/api";
 
 interface Props {
   onCreated: (link: ShortLink | null) => void;
 }
 
+const expiryChoices: { value: "" | ExpiresIn; label: string }[] = [
+  { value: "", label: "Never" },
+  { value: "1h", label: "1 hour" },
+  { value: "1d", label: "1 day" },
+  { value: "7d", label: "7 days" },
+  { value: "30d", label: "30 days" },
+];
+
 export default function ShortenForm({ onCreated }: Props) {
   const [url, setUrl] = useState("");
   const [alias, setAlias] = useState("");
+  const [expiresIn, setExpiresIn] = useState<"" | ExpiresIn>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,7 +28,11 @@ export default function ShortenForm({ onCreated }: Props) {
     setLoading(true);
     void (async () => {
       try {
-        const link = await shorten({ url: url.trim(), alias: alias.trim() });
+        const payload: Parameters<typeof shorten>[0] = { url: url.trim() };
+        const a = alias.trim();
+        if (a) payload.alias = a;
+        if (expiresIn) payload.expires_in = expiresIn;
+        const link = await shorten(payload);
         onCreated(link);
       } catch (err) {
         onCreated(null);
@@ -62,6 +75,23 @@ export default function ShortenForm({ onCreated }: Props) {
             pattern="[A-Za-z0-9_-]*"
           />
         </div>
+      </label>
+
+      <label className="field">
+        <span className="field__label">
+          Expires <span className="field__hint">optional</span>
+        </span>
+        <select
+          className="field__input field__select"
+          value={expiresIn}
+          onChange={(e) => setExpiresIn(e.target.value as "" | ExpiresIn)}
+        >
+          {expiryChoices.map((c) => (
+            <option key={c.value || "never"} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
       </label>
 
       {error && (
