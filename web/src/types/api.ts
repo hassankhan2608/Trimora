@@ -1,6 +1,4 @@
-// Shared API types. Mirrors the Go DTOs in api/internal/httpapi/types.go.
-// Keep this as the single source of truth for request/response shapes
-// used by the web client.
+// Mirrors api/internal/httpapi/types.go.
 
 export type ExpiresIn = "1h" | "1d" | "7d" | "30d";
 

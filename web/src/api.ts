@@ -17,7 +17,7 @@ export async function shorten(input: ShortenRequest): Promise<ShortLink> {
   try {
     data = (await res.json()) as ShortLink | ApiError;
   } catch {
-    // empty body
+    /* no body */
   }
 
   if (!res.ok) {

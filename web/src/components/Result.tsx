@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ShortLink } from "../types/api";
 
 interface Props {
@@ -7,10 +7,11 @@ interface Props {
 
 export default function Result({ link }: Props) {
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
+  const [lastLink, setLastLink] = useState(link);
+  if (link !== lastLink) {
+    setLastLink(link);
     setCopied(false);
-  }, [link]);
+  }
 
   function handleCopy() {
     void navigator.clipboard
