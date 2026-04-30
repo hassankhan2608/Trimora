@@ -1,0 +1,22 @@
+{
+  "name": "trimora",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Trimora — small, focused URL shortener (Go API + React/Vite web).",
+  "scripts": {
+    "test": "./scripts/test-all.sh",
+    "test:all": "./scripts/test-all.sh",
+    "test:api": "./scripts/smoke-api.sh",
+    "test:ui": "node ./scripts/smoke-ui.mjs",
+    "test:fast": "./scripts/test-all.sh --skip-ui",
+    "lint": "cd web && npm run lint",
+    "typecheck": "cd web && npm run typecheck",
+    "build:web": "cd web && npm run build",
+    "build:api": "cd api && go build ./...",
+    "dev:api": "cd api && go run ./cmd/server",
+    "dev:web": "cd web && npm run dev"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}
